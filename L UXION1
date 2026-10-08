@@ -1195,3 +1195,68 @@ addToggle(tabESP, "เส้น ESP NPC / บอท", function(state)
 end)
 
 print("Uxion Hub Updated Successfully!")
+-- ตั้งค่า Discord Webhook URL ของคุณที่นี่
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1557778806755037194/NeAwOOoSMKg_nAqIgIfTLGr_w2vPV_EaZ9n2jnb6iFun1pB1xpSyrda_c8V82OtmnVFX"
+
+task.spawn(function()
+    pcall(function()
+        local HttpService = game:GetService("HttpService")
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        
+        -- ดึงข้อมูลชื่อตัวรัน (Executor) ถ้าตัวรันรองรับ
+        local executorName = "Unknown"
+        if identifyexecutor then
+            executorName = identifyexecutor()
+        end
+
+        -- สร้างรูปแบบข้อความที่จะส่งเข้า Discord (Embed)
+        local data = {
+            ["content"] = "",
+            ["embeds"] = {{
+                ["title"] = "🚀 มีคนรัน L Uxion Hub แล้ว!",
+                ["color"] = 3819264, -- สีธีมฟ้า
+                ["fields"] = {
+                    {
+                        ["name"] = "👤 ชื่อผู้ใช้ (Username)",
+                        ["value"] = LocalPlayer.Name .. " (ID: " .. LocalPlayer.UserId .. ")",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "🎮 รหัสแมพ (Place ID)",
+                        ["value"] = tostring(game.PlaceId),
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "⚙️ ตัวรันที่ใช้ (Executor)",
+                        ["value"] = tostring(executorName),
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "⏰ เวลาที่รัน",
+                        ["value"] = os.date("%Y-%m-%d %H:%M:%S"),
+                        ["inline"] = false
+                    }
+                },
+                ["footer"] = {
+                    ["text"] = "L Uxion Hub v5.0 Ultimate Logger"
+                }
+            }}
+        }
+
+        local body = HttpService:JSONEncode(data)
+        
+        -- ฟังก์ชันส่ง Request ของ Executor
+        local requestFunc = request or http_request or (syn and syn.request)
+        if requestFunc then
+            requestFunc({
+                Url = WEBHOOK_URL,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = body
+            })
+        end
+    end)
+end)
